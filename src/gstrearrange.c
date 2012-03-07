@@ -295,13 +295,25 @@ GstCaps* gst_rearrange_set_buffer_caps (GstCaps *sinkCaps, int channels) {
 	return rc;
 }
 
+gint gst_rearrange_get_caps_width(GstCaps *sinkCaps) {
+	gint rc = 0;
+	GstStructure *struc = gst_caps_get_structure(sinkCaps, 0);
+	if (!gst_structure_get_int(struc, "width", &rc)) {
+		gchar *capString = gst_caps_to_string(sinkCaps);
+		g_print("Problem getting the cap width (caps: '%s')\n", capString);
+		g_free(capString);
+	}
+	rc /= 8;
+
+	return rc;
+}
+
 /* chain function
  * this function does the actual processing
  */
 static GstFlowReturn
 gst_rearrange_chain (GstPad * pad, GstBuffer * buf)
 {
-	int width = 2;
 	GstReArrange *filter = GST_REARRANGE (GST_OBJECT_PARENT (pad));
 
 	GstBuffer *tgtBuf = gst_buffer_new_and_alloc(buf->size*(filter->outChannels/2));
@@ -309,6 +321,9 @@ gst_rearrange_chain (GstPad * pad, GstBuffer * buf)
 	// target caps
 	GstCaps *tgtCaps = gst_rearrange_set_buffer_caps(gst_buffer_get_caps(buf), filter->outChannels);
 	gst_buffer_set_caps(tgtBuf, tgtCaps);
+
+	// get width
+	int width = gst_rearrange_get_caps_width(gst_buffer_get_caps(buf));
 
 	gint8 *pSrc = buf->data, *pTgt = tgtBuf->data;
 
