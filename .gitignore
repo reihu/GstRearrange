@@ -14,4 +14,7 @@ missing
 stamp-*
 my-plugin-*.tar.*
 *~
-
+src/.deps/
+src/.libs/
+src/libgstrearrange.la
+src/libgstrearrange_la-gstrearrange.lo
