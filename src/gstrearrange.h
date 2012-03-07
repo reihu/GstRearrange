@@ -52,7 +52,7 @@ G_BEGIN_DECLS
 
 /* #defines don't like whitespacey bits */
 #define GST_TYPE_REARRANGE \
-  (gst_re_arrange_get_type())
+  (gst_rearrange_get_type())
 #define GST_REARRANGE(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_REARRANGE,GstReArrange))
 #define GST_REARRANGE_CLASS(klass) \
@@ -80,7 +80,7 @@ struct _GstReArrangeClass
   GstElementClass parent_class;
 };
 
-GType gst_re_arrange_get_type (void);
+GType gst_rearrange_get_type (void);
 
 G_END_DECLS
 

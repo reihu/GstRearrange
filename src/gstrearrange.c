@@ -69,8 +69,8 @@
 
 #include "gstrearrange.h"
 
-GST_DEBUG_CATEGORY_STATIC (gst_re_arrange_debug);
-#define GST_CAT_DEFAULT gst_re_arrange_debug
+GST_DEBUG_CATEGORY_STATIC (gst_rearrange_debug);
+#define GST_CAT_DEFAULT gst_rearrange_debug
 
 /* Filter signals and args */
 enum
@@ -138,22 +138,20 @@ static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src",
 	GST_STATIC_CAPS(SRCCAPS)
 	);
 
-GST_BOILERPLATE (GstReArrange, gst_re_arrange, GstElement,
-	GST_TYPE_ELEMENT);
+GST_BOILERPLATE (GstReArrange, gst_rearrange, GstElement, GST_TYPE_ELEMENT);
 
-static void gst_re_arrange_set_property (GObject * object, guint prop_id,
+static void gst_rearrange_set_property (GObject * object, guint prop_id,
 	const GValue * value, GParamSpec * pspec);
-static void gst_re_arrange_get_property (GObject * object, guint prop_id,
+static void gst_rearrange_get_property (GObject * object, guint prop_id,
 	GValue * value, GParamSpec * pspec);
 
-static gboolean gst_re_arrange_set_caps (GstPad * pad, GstCaps * caps);
-static GstFlowReturn gst_re_arrange_chain (GstPad * pad, GstBuffer * buf);
+static gboolean gst_rearrange_set_caps (GstPad * pad, GstCaps * caps);
+static GstFlowReturn gst_rearrange_chain (GstPad * pad, GstBuffer * buf);
 
 /* GObject vmethod implementations */
 
 static void
-gst_re_arrange_base_init (gpointer gclass)
-{
+gst_rearrange_base_init (gpointer gclass) {
   GstElementClass *element_class = GST_ELEMENT_CLASS (gclass);
 
   gst_element_class_set_details_simple(element_class,
@@ -170,16 +168,15 @@ gst_re_arrange_base_init (gpointer gclass)
 
 /* initialize the rearrange's class */
 static void
-gst_re_arrange_class_init (GstReArrangeClass * klass)
-{
+gst_rearrange_class_init (GstReArrangeClass * klass) {
 	GObjectClass *gobject_class;
 	GstElementClass *gstelement_class;
 
 	gobject_class = (GObjectClass *) klass;
 	gstelement_class = (GstElementClass *) klass;
 
-	gobject_class->set_property = gst_re_arrange_set_property;
-	gobject_class->get_property = gst_re_arrange_get_property;
+	gobject_class->set_property = gst_rearrange_set_property;
+	gobject_class->get_property = gst_rearrange_get_property;
 
 	g_object_class_install_property (gobject_class, PROP_CHANNELS,
 		g_param_spec_uint("channels", "OutputChannels", "Channel count of the output signal",
@@ -195,16 +192,14 @@ gst_re_arrange_class_init (GstReArrangeClass * klass)
  * initialize instance structure
  */
 static void
-gst_re_arrange_init (GstReArrange * filter,
-	GstReArrangeClass * gclass)
-{
+gst_rearrange_init (GstReArrange * filter, GstReArrangeClass * gclass) {
   filter->sinkpad = gst_pad_new_from_static_template (&sink_factory, "sink");
   gst_pad_set_setcaps_function (filter->sinkpad,
-								GST_DEBUG_FUNCPTR(gst_re_arrange_set_caps));
+								GST_DEBUG_FUNCPTR(gst_rearrange_set_caps));
   gst_pad_set_getcaps_function (filter->sinkpad,
 								GST_DEBUG_FUNCPTR(gst_pad_proxy_getcaps));
   gst_pad_set_chain_function (filter->sinkpad,
-							  GST_DEBUG_FUNCPTR(gst_re_arrange_chain));
+							  GST_DEBUG_FUNCPTR(gst_rearrange_chain));
 
   filter->srcpad = gst_pad_new_from_static_template (&src_factory, "src");
   gst_pad_set_getcaps_function (filter->srcpad,
@@ -218,7 +213,7 @@ gst_re_arrange_init (GstReArrange * filter,
 }
 
 static void
-gst_re_arrange_set_property (GObject * object, guint prop_id,
+gst_rearrange_set_property (GObject * object, guint prop_id,
 	const GValue * value, GParamSpec * pspec)
 {
 	GstReArrange *filter = GST_REARRANGE (object);
@@ -237,7 +232,7 @@ gst_re_arrange_set_property (GObject * object, guint prop_id,
 }
 
 static void
-gst_re_arrange_get_property (GObject * object, guint prop_id,
+gst_rearrange_get_property (GObject * object, guint prop_id,
 	GValue * value, GParamSpec * pspec)
 {
 	GstReArrange *filter = GST_REARRANGE (object);
@@ -261,7 +256,7 @@ gst_re_arrange_get_property (GObject * object, guint prop_id,
 
 /* this function handles the link with other elements */
 static gboolean
-gst_re_arrange_set_caps (GstPad * pad, GstCaps * caps)
+gst_rearrange_set_caps (GstPad * pad, GstCaps * caps)
 {
   GstReArrange *filter;
   GstPad *otherpad;
@@ -278,9 +273,9 @@ gst_re_arrange_set_caps (GstPad * pad, GstCaps * caps)
  * to the "channels" property
  * \param sinkCaps Input capabilities (those of the input buffer)
  * \param channels Output channels
- * \note this function is called by gst_re_arrange_chain()
+ * \note this function is called by gst_rearrange_chain()
  */
-GstCaps* gst_re_arrange_set_buffer_caps (GstCaps *sinkCaps, int channels) {
+GstCaps* gst_rearrange_set_buffer_caps (GstCaps *sinkCaps, int channels) {
 	GstCaps *rc = 0;
 
 	GstStructure *struc = gst_structure_copy(gst_caps_get_structure(sinkCaps, 0));
@@ -297,7 +292,7 @@ GstCaps* gst_re_arrange_set_buffer_caps (GstCaps *sinkCaps, int channels) {
  * this function does the actual processing
  */
 static GstFlowReturn
-gst_re_arrange_chain (GstPad * pad, GstBuffer * buf)
+gst_rearrange_chain (GstPad * pad, GstBuffer * buf)
 {
 	int width = 2;
 	GstReArrange *filter = GST_REARRANGE (GST_OBJECT_PARENT (pad));
@@ -305,7 +300,7 @@ gst_re_arrange_chain (GstPad * pad, GstBuffer * buf)
 	GstBuffer *tgtBuf = gst_buffer_new_and_alloc(buf->size*(filter->outChannels/2));
 
 	// target caps
-	GstCaps *tgtCaps = gst_re_arrange_set_buffer_caps(gst_buffer_get_caps(buf), filter->outChannels);
+	GstCaps *tgtCaps = gst_rearrange_set_buffer_caps(gst_buffer_get_caps(buf), filter->outChannels);
 	gst_buffer_set_caps(tgtBuf, tgtCaps);
 
 	gint8 *pSrc = buf->data, *pTgt = tgtBuf->data;
@@ -342,7 +337,7 @@ rearrange_init (GstPlugin * rearrange)
    *
    * exchange the string 'Template rearrange' with your description
    */
-  GST_DEBUG_CATEGORY_INIT (gst_re_arrange_debug, "rearrange",
+  GST_DEBUG_CATEGORY_INIT (gst_rearrange_debug, "rearrange",
 	  0, "Template rearrange");
 
   return gst_element_register (rearrange, "rearrange", GST_RANK_NONE,
@@ -355,7 +350,7 @@ rearrange_init (GstPlugin * rearrange)
  * compile this code. GST_PLUGIN_DEFINE needs PACKAGE to be defined.
  */
 #ifndef PACKAGE
-#define PACKAGE "myfirstrearrange"
+#define PACKAGE "rearrange"
 #endif
 
 /* gstreamer looks for this structure to register rearranges
@@ -366,7 +361,7 @@ GST_PLUGIN_DEFINE (
 	GST_VERSION_MAJOR,
 	GST_VERSION_MINOR,
 	"rearrange",
-	"Template rearrange",
+	"Channel rearrangement plugin",
 	rearrange_init,
 	VERSION,
 	"LGPL",
