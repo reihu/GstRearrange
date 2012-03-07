@@ -273,21 +273,23 @@ gst_re_arrange_set_caps (GstPad * pad, GstCaps * caps)
   return gst_pad_set_caps (otherpad, caps);
 }
 
-
-GstCaps* gst_re_arrange_set_buffer_caps (GstCaps *sinkCaps) {
+/**
+ * Copies the in buffer's caps and changes the channel parameter according
+ * to the "channels" property
+ * \param sinkCaps Input capabilities (those of the input buffer)
+ * \param channels Output channels
+ * \note this function is called by gst_re_arrange_chain()
+ */
+GstCaps* gst_re_arrange_set_buffer_caps (GstCaps *sinkCaps, int channels) {
 	GstCaps *rc = 0;
-#if 0
-	rc = gst_buffer_get_caps(buf);
-#else
-	rc = gst_caps_from_string(
-		"audio/x-raw-int,"
-			"endianness=(int)1234,"
-			"signed=(boolean)true,"
-			"width=(int)16,"
-			"depth=(int)16,"
-			"rate=(int)44100,"
-			"channels=(int)8");
-#endif
+
+	GstStructure *struc = gst_structure_copy(gst_caps_get_structure(sinkCaps, 0));
+
+	gst_structure_set (struc, "channels", G_TYPE_INT, channels, NULL);
+
+	rc = gst_caps_new_empty();
+	gst_caps_append_structure(rc, struc);
+
 	return rc;
 }
 
@@ -303,7 +305,7 @@ gst_re_arrange_chain (GstPad * pad, GstBuffer * buf)
 	GstBuffer *tgtBuf = gst_buffer_new_and_alloc(buf->size*(filter->outChannels/2));
 
 	// target caps
-	GstCaps *tgtCaps = gst_re_arrange_set_buffer_caps(gst_buffer_get_caps(buf));
+	GstCaps *tgtCaps = gst_re_arrange_set_buffer_caps(gst_buffer_get_caps(buf), filter->outChannels);
 	gst_buffer_set_caps(tgtBuf, tgtCaps);
 
 	gint8 *pSrc = buf->data, *pTgt = tgtBuf->data;
