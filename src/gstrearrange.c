@@ -54,10 +54,17 @@
  * channel count doesn't match the channel count of the audio device
  *
  * <refsect2>
- * <title>Example launch line</title>
+ * <title>Example launch lines</title>
  * |[
- * gst-launch -v -m fakesrc ! rearrange ! fakesink silent=TRUE
+ * gst-launch -v -m audiotestsrc ! rearrange channels=4 pos=1 ! alsasink
  * ]|
+ * Plays a sine wave to the rear channels of a 4-channel output stream
+ *
+ * |[
+ * gst-launch audiotestsrc freq=1200 ! audioconvert ! rearrange name=foo channels=4 ! audioconvert ! adder name=mix ! alsasink  audiotestsrc freq=444 ! rearrange name=bar channels=4 pos=1 ! mix.
+ * ]|
+ * Plays a 1200Hz wave at the front and a 444Hz sine at the rear channels of a 4-channel output stream
+ *
  * </refsect2>
  */
 
