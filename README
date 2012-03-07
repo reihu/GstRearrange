@@ -1,11 +1,27 @@
-This git module contains template code for possible GStreamer projects.
+This GStreamer plugin takes a stereo signal and puts it into two specified
+channels of a multichannel audio stream. The other channels will remain
+silent.
 
-gst-app
-	basic autotools layout for writing a GStreamer-based application.
+You can use this plugin to send multiple stereo streams to a surround sound
+card (when you use it in combination with the adder plugin).
 
-gst-plugin
-	basic autotools layout and basic filter code for writing a
-	GStreamer plug-in.
+Usage example:
+  $ gst-launch -v -m audiotestsrc ! rearrange channels=4 pos=1 ! alsasink
+    Sends a sine wave to the rear channels of a four-channel alsa stream
+
+Properties:
+- channels: Specifies the output channel count.
+  This can be an integer in the range of 2..8
+- pos: Specifies the output channels where the plugin should put the original
+  input signal. It accepts the following values:
+  0: front channels
+  1: rear channels
+  2: center/lfe
+  3: side channels
+
+If _channels_ < 2*(pos+1), the output signal will be silent (you can use
+this to generate a multichannel silence if you need it)
+
 
 This code is provided under a MIT license [1], which basically means "do
 with it as you wish, but don't blame us if it doesn't work". You can use
@@ -14,20 +30,10 @@ recommend the use of the LGPL [2] license for applications and plugins,
 given the minefield of patents the multimedia is nowadays. See our website
 for details [3].
 
-Build each module like this:
+Build this plugin like this:
 
-    cd gst-plugin
     ./autogen.sh
     make
-
-Modify gst-plugin/src/Makefile.am to add or remove source files to build or
-add additional dependencies or compiler flags or change the name of the
-plugin file to be installed. Run ./autoregen.sh if changes don't take effect
-automatically on 'make'.
-
-Modify gst-plugin/configure.ac to check for additional library dependencies
-or other features needed by your plugin. Run ./autoregen.sh if changes don't
-take effect automatically on 'make'.
 
 Once the plugin is built you can either install it with 'sudo make install'
 (however, this will by default go into the /usr/local prefix where it won't
@@ -43,7 +49,10 @@ You can also check if it has been built correctly with:
 
     gst-inspect-0.10 gst-plugins/src/.libs/libgstplugin.so
 
+This Plugin was built upon the generic GStreamer plugin template found at [4].
+
 
 [1] http://www.opensource.org/licenses/mit-license.php or COPYING.MIT
 [2] http://www.opensource.org/licenses/lgpl-license.php or COPYING.LIB
 [3] http://gstreamer.freedesktop.org/documentation/licensing.html
+[4] http://gstreamer.freedesktop.org/data/doc/gstreamer/head/pwg/html/chapter-building-boiler.html
