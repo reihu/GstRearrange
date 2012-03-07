@@ -93,7 +93,6 @@ enum
   PROP_CHANNELS
 };
 
-#if 0
 #define SRCCAPS \
   "audio/x-raw-int, " \
 	"width = (int) 16, " \
@@ -110,24 +109,6 @@ enum
 	"endianness = (int) BYTE_ORDER, " \
 	"channels = (int) { 2 }, " \
 	"rate = (int) [ 8000, 96000 ]"
-#else
-#define SRCCAPS \
-  "audio/x-raw-int, " \
-	"width = (int) 16, " \
-	"depth = (int) 16, " \
-	"endianness = (int) BYTE_ORDER, " \
-	"channels = (int) { 8 }, " \
-	"rate = (int) 48000"
-
-#define SINKCAPS \
-  "audio/x-raw-int, " \
-	"width = (int) 16, " \
-	"depth = (int) 16, " \
-	"endianness = (int) BYTE_ORDER, " \
-	"channels = (int) { 2 }, " \
-	"rate = (int) 48000"
-
-#endif
 
 /* the capabilities of the inputs and outputs.
  *
