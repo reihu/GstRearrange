@@ -71,7 +71,8 @@ struct _GstReArrange
 
   GstPad *sinkpad, *srcpad;
 
-  gboolean silent;
+  guint outChannels;
+  guint outPos;
 };
 
 struct _GstReArrangeClass

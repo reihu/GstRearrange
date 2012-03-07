@@ -82,7 +82,8 @@ enum
 enum
 {
   PROP_0,
-  PROP_SILENT
+  PROP_POS,
+  PROP_CHANNELS
 };
 
 #if 0
@@ -171,18 +172,21 @@ gst_re_arrange_base_init (gpointer gclass)
 static void
 gst_re_arrange_class_init (GstReArrangeClass * klass)
 {
-  GObjectClass *gobject_class;
-  GstElementClass *gstelement_class;
+	GObjectClass *gobject_class;
+	GstElementClass *gstelement_class;
 
-  gobject_class = (GObjectClass *) klass;
-  gstelement_class = (GstElementClass *) klass;
+	gobject_class = (GObjectClass *) klass;
+	gstelement_class = (GstElementClass *) klass;
 
-  gobject_class->set_property = gst_re_arrange_set_property;
-  gobject_class->get_property = gst_re_arrange_get_property;
+	gobject_class->set_property = gst_re_arrange_set_property;
+	gobject_class->get_property = gst_re_arrange_get_property;
 
-  g_object_class_install_property (gobject_class, PROP_SILENT,
-	  g_param_spec_boolean ("silent", "Silent", "Produce verbose output ?",
-		  FALSE, G_PARAM_READWRITE));
+	g_object_class_install_property (gobject_class, PROP_CHANNELS,
+		g_param_spec_uint("channels", "OutputChannels", "Channel count of the output signal",
+		2, 8, 8, G_PARAM_READWRITE));
+	g_object_class_install_property (gobject_class, PROP_POS,
+		g_param_spec_uint("pos", "SignalPos", "Position of the signal (0: front, 1: rear, 2: center/lfe, 3: side)",
+		0, 3, 0, G_PARAM_READWRITE));
 }
 
 /* initialize the new element
@@ -208,22 +212,27 @@ gst_re_arrange_init (GstReArrange * filter,
 
   gst_element_add_pad (GST_ELEMENT (filter), filter->sinkpad);
   gst_element_add_pad (GST_ELEMENT (filter), filter->srcpad);
-  filter->silent = FALSE;
+
+  filter->outChannels = 8;
+  filter->outPos = 0;
 }
 
 static void
 gst_re_arrange_set_property (GObject * object, guint prop_id,
 	const GValue * value, GParamSpec * pspec)
 {
-  GstReArrange *filter = GST_REARRANGE (object);
+	GstReArrange *filter = GST_REARRANGE (object);
 
-  switch (prop_id) {
-	case PROP_SILENT:
-	  filter->silent = g_value_get_boolean (value);
-	  break;
+	switch (prop_id) {
+	case PROP_CHANNELS:
+		filter->outChannels = g_value_get_uint(value);
+		break;
+	case PROP_POS:
+		filter->outPos = g_value_get_uint(value);
+		break;
 	default:
-	  G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-	  break;
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
   }
 }
 
@@ -231,16 +240,21 @@ static void
 gst_re_arrange_get_property (GObject * object, guint prop_id,
 	GValue * value, GParamSpec * pspec)
 {
-  GstReArrange *filter = GST_REARRANGE (object);
+	GstReArrange *filter = GST_REARRANGE (object);
 
-  switch (prop_id) {
-	case PROP_SILENT:
-	  g_value_set_boolean (value, filter->silent);
-	  break;
+	switch (prop_id) {
+	case PROP_CHANNELS:
+		g_print("chanType: %s\n", g_type_name(g_value_array_get_type()));
+		g_value_set_uint(value, filter->outChannels);
+		break;
+	case PROP_POS:
+		g_print("posType: %s\n", g_type_name(g_value_array_get_type()));
+		g_value_set_uint(value, filter->outPos);
+		break;
 	default:
-	  G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-	  break;
-  }
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
 }
 
 /* GstElement vmethod implementations */
@@ -260,28 +274,12 @@ gst_re_arrange_set_caps (GstPad * pad, GstCaps * caps)
 }
 
 
-/*
-  POS.:
-	0 front
-	1 rear
-	2 center/lfe
-	3 side
-*/
-/* chain function
- * this function does the actual processing
- */
-static GstFlowReturn
-gst_re_arrange_chain (GstPad * pad, GstBuffer * buf)
-{
-	int tgtChannels = 8, width = 2, pos = 3;
-	GstReArrange *filter = GST_REARRANGE (GST_OBJECT_PARENT (pad));
-
-	GstBuffer *tgtBuf = gst_buffer_new_and_alloc(buf->size*(tgtChannels/2));
-
+GstCaps* gst_re_arrange_set_buffer_caps (GstCaps *sinkCaps) {
+	GstCaps *rc = 0;
 #if 0
-	GstCaps *tgtCaps = gst_buffer_get_caps(buf);
+	rc = gst_buffer_get_caps(buf);
 #else
-	GstCaps *tgtCaps = gst_caps_from_string(
+	rc = gst_caps_from_string(
 		"audio/x-raw-int,"
 			"endianness=(int)1234,"
 			"signed=(boolean)true,"
@@ -290,13 +288,27 @@ gst_re_arrange_chain (GstPad * pad, GstBuffer * buf)
 			"rate=(int)44100,"
 			"channels=(int)8");
 #endif
+	return rc;
+}
 
+/* chain function
+ * this function does the actual processing
+ */
+static GstFlowReturn
+gst_re_arrange_chain (GstPad * pad, GstBuffer * buf)
+{
+	int width = 2;
+	GstReArrange *filter = GST_REARRANGE (GST_OBJECT_PARENT (pad));
+
+	GstBuffer *tgtBuf = gst_buffer_new_and_alloc(buf->size*(filter->outChannels/2));
+
+	// target caps
+	GstCaps *tgtCaps = gst_re_arrange_set_buffer_caps(gst_buffer_get_caps(buf));
 	gst_buffer_set_caps(tgtBuf, tgtCaps);
-	//gst_buffer_set_data(tgtBuf, buf->data, buf->size*2);
 
 	gint8 *pSrc = buf->data, *pTgt = tgtBuf->data;
 
-	int curByte = 0, fromByte = 2*pos*width;
+	int curByte = 0, fromByte = 2*filter->outPos*width;
 	int toByte = fromByte + (width*2); // two channels
 	while (pTgt < tgtBuf->data + tgtBuf->size) {
 		//g_print("curByte: %i ", curByte);
@@ -309,7 +321,7 @@ gst_re_arrange_chain (GstPad * pad, GstBuffer * buf)
 			*pTgt++ = 0;
 			//g_print("silence\n");
 		}
-		curByte = (curByte+1) % (tgtChannels*width);
+		curByte = (curByte+1) % (filter->outChannels*width);
 	}
 
 	//gst_buffer_set_caps(tgtBuf->caps, gst_caps_from_string(SRCCAPS));
