@@ -1,0 +1,16 @@
+Source: gstreamer0.10-rearrange
+Section: sound
+Priority: extra
+Maintainer: Manuel Reithuber <gstreamer@manuel.reithuber.net>
+Build-Depends: debhelper (>= 8.0.0), autotools-dev, libgstreamer0.10-dev
+Standards-Version: 3.9.2
+#Homepage: <insert the upstream URL, if relevant>
+Vcs-Git: git://github.com/reihu/GstRearrange.git
+Vcs-Browser: https://github.com/reihu/GstRearrange
+
+Package: gstreamer0.10-rearrange
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libgstreamer0.10-0
+Description: GStreamer rearrange plugin
+ Takes a stereo stream and puts it into two specified channels of a
+ multichannel output stream, leaving the other channels silent.
