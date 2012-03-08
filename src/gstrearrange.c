@@ -94,21 +94,31 @@ enum
 };
 
 #define SRCCAPS \
-  "audio/x-raw-int, " \
-	"width = (int) 16, " \
-	"depth = (int) 16, " \
-	"endianness = (int) BYTE_ORDER, " \
-	"channels = (int) { 8 }, " \
-	"rate = (int) [ 8000, 96000 ]"
+	"audio/x-raw-int," \
+		"width = (int) 16," \
+		"depth = (int) 16," \
+		"endianness = (int) BYTE_ORDER," \
+		"channels = (int) {2,4,6,8}," \
+		"rate = (int) [1,2147483647];" \
+	"audio/x-raw-float," \
+		"width = (int) {32, 64}," \
+		"endianness = (int) BYTE_ORDER," \
+		"channels = (int) {2,4,6,8}," \
+		"rate = (int) [1,2147483647]"
 
 
 #define SINKCAPS \
-  "audio/x-raw-int, " \
-	"width = (int) 16, " \
-	"depth = (int) 16, " \
-	"endianness = (int) BYTE_ORDER, " \
-	"channels = (int) { 2 }, " \
-	"rate = (int) [ 8000, 96000 ]"
+	"audio/x-raw-int," \
+		"width = (int) 16," \
+		"depth = (int) 16," \
+		"endianness = (int) BYTE_ORDER," \
+		"channels = (int) {2}," \
+		"rate = (int) [1, 2147483647];" \
+	"audio/x-raw-float," \
+		"width = (int) {32, 64}," \
+		"endianness = (int) BYTE_ORDER," \
+		"channels = (int) {2}," \
+		"rate = (int) [1,2147483647]"
 
 /* the capabilities of the inputs and outputs.
  *
