@@ -1,8 +1,8 @@
 Source: gstreamer0.10-rearrange
 Section: sound
 Priority: extra
-Maintainer: Manuel Reithuber <gstreamer@manuel.reithuber.net>
-Build-Depends: debhelper (>= 8.0.0), autotools-dev, libgstreamer0.10-dev
+Maintainer: Manuel Reithuber <manuel@reithuber.net>
+Build-Depends: debhelper (>= 8.0.0), autotools-dev, libgstreamer0.10-dev, dh-autoreconf
 Standards-Version: 3.9.2
 #Homepage: <insert the upstream URL, if relevant>
 Vcs-Git: git://github.com/reihu/GstRearrange.git

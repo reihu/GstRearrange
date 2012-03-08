@@ -3,7 +3,7 @@ Upstream-Name: gstreamer0.10-rearrange
 Source: git://github.com/reihu/GstRearrange.git
 
 Files: *
-Copyright: 2012 Manuel Reithuber <gstreamer@manuel.reithuber.net>
+Copyright: 2012 Manuel Reithuber <manuel@reithuber.net>
 License: LGPL-2+
  This package is free software; you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published
