@@ -73,6 +73,7 @@
 #endif
 
 #include <gst/gst.h>
+#include <gst/audio/multichannel.h>
 
 #include "gstrearrange.h"
 
@@ -119,6 +120,17 @@ enum
 		"endianness = (int) BYTE_ORDER," \
 		"channels = (int) {1,2}," \
 		"rate = (int) [1,2147483647]"
+
+static GstAudioChannelPosition _gst_rearrange_positions[8] = {
+	GST_AUDIO_CHANNEL_POSITION_FRONT_LEFT,
+	GST_AUDIO_CHANNEL_POSITION_FRONT_RIGHT,
+	GST_AUDIO_CHANNEL_POSITION_REAR_LEFT,
+	GST_AUDIO_CHANNEL_POSITION_REAR_RIGHT,
+	GST_AUDIO_CHANNEL_POSITION_FRONT_CENTER,
+	GST_AUDIO_CHANNEL_POSITION_LFE,
+	GST_AUDIO_CHANNEL_POSITION_SIDE_LEFT,
+	GST_AUDIO_CHANNEL_POSITION_SIDE_RIGHT
+};
 
 /* the capabilities of the inputs and outputs.
  *
@@ -281,6 +293,8 @@ GstCaps* gst_rearrange_set_buffer_caps (GstCaps *sinkCaps, int channels) {
 
 	gst_structure_set (struc, "channels", G_TYPE_INT, channels, NULL);
 
+	gst_audio_set_channel_positions(struc, _gst_rearrange_positions);
+
 	rc = gst_caps_new_empty();
 	gst_caps_append_structure(rc, struc);
 
@@ -336,7 +350,6 @@ gst_rearrange_chain (GstPad * pad, GstBuffer * buf)
 		curByte = (curByte+1) % (filter->outChannels*width);
 	}
 
-	//gst_buffer_set_caps(tgtBuf->caps, gst_caps_from_string(SRCCAPS));
 	return gst_pad_push(filter->srcpad, tgtBuf);
 }
 
