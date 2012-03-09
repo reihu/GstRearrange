@@ -312,6 +312,7 @@ gst_rearrange_chain (GstPad * pad, GstBuffer * buf)
 	// target caps
 	GstCaps *tgtCaps = gst_rearrange_set_buffer_caps(gst_buffer_get_caps(buf), filter->outChannels);
 	gst_buffer_set_caps(tgtBuf, tgtCaps);
+	gst_caps_unref(tgtCaps);
 
 	// get width
 	int width = gst_rearrange_get_caps_width(gst_buffer_get_caps(buf));
