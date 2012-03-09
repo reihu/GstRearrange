@@ -112,12 +112,12 @@ enum
 		"width = (int) 16," \
 		"depth = (int) 16," \
 		"endianness = (int) BYTE_ORDER," \
-		"channels = (int) {2}," \
+		"channels = (int) {1,2}," \
 		"rate = (int) [1, 2147483647];" \
 	"audio/x-raw-float," \
 		"width = (int) {32, 64}," \
 		"endianness = (int) BYTE_ORDER," \
-		"channels = (int) {2}," \
+		"channels = (int) {1,2}," \
 		"rate = (int) [1,2147483647]"
 
 /* the capabilities of the inputs and outputs.
@@ -162,6 +162,7 @@ gst_rearrange_base_init (gpointer gclass) {
 	  gst_static_pad_template_get (&src_factory));
   gst_element_class_add_pad_template (element_class,
 	  gst_static_pad_template_get (&sink_factory));
+
 }
 
 /* initialize the rearrange's class */
@@ -286,15 +287,14 @@ GstCaps* gst_rearrange_set_buffer_caps (GstCaps *sinkCaps, int channels) {
 	return rc;
 }
 
-gint gst_rearrange_get_caps_width(GstCaps *sinkCaps) {
+gint gst_rearrange_get_caps_int(GstCaps *sinkCaps, const char *field) {
 	gint rc = 0;
 	GstStructure *struc = gst_caps_get_structure(sinkCaps, 0);
-	if (!gst_structure_get_int(struc, "width", &rc)) {
+	if (!gst_structure_get_int(struc, field, &rc)) {
 		gchar *capString = gst_caps_to_string(sinkCaps);
-		g_print("Problem getting the cap width (caps: '%s')\n", capString);
+		g_print("Problem getting the cap '%s' (caps: '%s')\n", field, capString);
 		g_free(capString);
 	}
-	rc /= 8;
 
 	return rc;
 }
@@ -305,33 +305,34 @@ gint gst_rearrange_get_caps_width(GstCaps *sinkCaps) {
 static GstFlowReturn
 gst_rearrange_chain (GstPad * pad, GstBuffer * buf)
 {
+	// get input buffer info
+	int width = gst_rearrange_get_caps_int(gst_buffer_get_caps(buf), "width")/8;
+	int inChannels = gst_rearrange_get_caps_int(gst_buffer_get_caps(buf), "channels");
+
 	GstReArrange *filter = GST_REARRANGE (GST_OBJECT_PARENT (pad));
 
-	GstBuffer *tgtBuf = gst_buffer_new_and_alloc(buf->size*(filter->outChannels/2));
+	GstBuffer *tgtBuf = gst_buffer_new_and_alloc(buf->size*(filter->outChannels/inChannels));
 
 	// target caps
 	GstCaps *tgtCaps = gst_rearrange_set_buffer_caps(gst_buffer_get_caps(buf), filter->outChannels);
 	gst_buffer_set_caps(tgtBuf, tgtCaps);
 	gst_caps_unref(tgtCaps);
 
-	// get width
-	int width = gst_rearrange_get_caps_width(gst_buffer_get_caps(buf));
-
 	gint8 *pSrc = buf->data, *pTgt = tgtBuf->data;
 
 	int curByte = 0, fromByte = 2*filter->outPos*width;
 	int toByte = fromByte + (width*2); // two channels
+
+	gint8 *pTmp = 0;
 	while (pTgt < tgtBuf->data + tgtBuf->size) {
-		//g_print("curByte: %i ", curByte);
-		//gst_caps_get_structure()
 		if (curByte >= fromByte && curByte < toByte) {
+			if (inChannels == 1) {
+				if (curByte == fromByte) pTmp = pSrc;
+				if (curByte == fromByte+width) pSrc = pTmp;
+			}
 			*pTgt++ = *pSrc++;
-			//g_print("ch\n");
 		}
-		else {
-			*pTgt++ = 0;
-			//g_print("silence\n");
-		}
+		else *pTgt++ = 0;
 		curByte = (curByte+1) % (filter->outChannels*width);
 	}
 
