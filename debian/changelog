@@ -1,3 +1,9 @@
+gstreamer0.10-rearrange (0.2-1) unstable; urgency=low
+
+  * build-dependency update
+
+ -- Manuel Reithuber <manuel@reithuber.net>  Mon, 12 Mar 2012 13:52:17 +0100
+
 gstreamer0.10-rearrange (0.2) unstable; urgency=low
 
   * mono support
