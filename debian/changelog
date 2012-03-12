@@ -1,3 +1,11 @@
+gstreamer0.10-rearrange (0.2) unstable; urgency=low
+
+  * mono support
+  * proper multichannel support
+  * memory leak fixes 
+
+ -- Manuel Reithuber <manuel@reithuber.net>  Mon, 12 Mar 2012 13:47:56 +0100
+
 gstreamer0.10-rearrange (0.1-2) unstable; urgency=low
 
   * updated some debian stuff
