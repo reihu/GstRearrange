@@ -44,6 +44,7 @@ dnl for libgstrtsp-0.10: gstreamer-rtsp-0.10 >= $GST_REQUIRED
 dnl etc.
 PKG_CHECK_MODULES(GST, [
   gstreamer-0.10 >= $GST_REQUIRED
+  gstreamer-audio-0.10 >= $GST_REQUIRED
   gstreamer-base-0.10 >= $GST_REQUIRED
   gstreamer-controller-0.10 >= $GST_REQUIRED
 ], [
