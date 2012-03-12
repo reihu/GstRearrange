@@ -285,6 +285,7 @@ gst_rearrange_set_caps (GstPad * pad, GstCaps * caps)
  * \param sinkCaps Input capabilities (those of the input buffer)
  * \param channels Output channels
  * \note this function is called by gst_rearrange_chain()
+ * \warning Don't forget to call gst_caps_unref()
  */
 GstCaps* gst_rearrange_set_buffer_caps (GstCaps *sinkCaps, int channels) {
 	GstCaps *rc = 0;
@@ -350,6 +351,7 @@ gst_rearrange_chain (GstPad * pad, GstBuffer * buf)
 		curByte = (curByte+1) % (filter->outChannels*width);
 	}
 
+	gst_buffer_unref(buf);
 	return gst_pad_push(filter->srcpad, tgtBuf);
 }
 
