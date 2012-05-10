@@ -1,16 +1,22 @@
-gstreamer0.10-rearrange (0.2-2) unstable; urgency=low
+gstreamer0.10-rearrange (0.2-3) stable; urgency=low
+
+  * Changed to "3.0 (native)" source format
+
+ -- Manuel Reithuber <manuel@reithuber.net>  Thu, 10 May 2012 10:38:41 +0200
+
+gstreamer0.10-rearrange (0.2-2) stable; urgency=low
 
   * debhelper downgrade (8 => 7) to support older systems
 
  -- Manuel Reithuber <manuel@reithuber.net>  Tue, 13 Mar 2012 13:54:20 +0100
 
-gstreamer0.10-rearrange (0.2-1) unstable; urgency=low
+gstreamer0.10-rearrange (0.2-1) stable; urgency=low
 
   * build-dependency update
 
  -- Manuel Reithuber <manuel@reithuber.net>  Mon, 12 Mar 2012 13:52:17 +0100
 
-gstreamer0.10-rearrange (0.2) unstable; urgency=low
+gstreamer0.10-rearrange (0.2) stable; urgency=low
 
   * mono support
   * proper multichannel support
@@ -18,13 +24,13 @@ gstreamer0.10-rearrange (0.2) unstable; urgency=low
 
  -- Manuel Reithuber <manuel@reithuber.net>  Mon, 12 Mar 2012 13:47:56 +0100
 
-gstreamer0.10-rearrange (0.1-2) unstable; urgency=low
+gstreamer0.10-rearrange (0.1-2) stable; urgency=low
 
   * updated some debian stuff
 
  -- Manuel Reithuber <manuel@reithuber.net>  Thu, 08 Mar 2012 17:50:49 +0100
 
-gstreamer0.10-rearrange (0.1-1) unstable; urgency=low
+gstreamer0.10-rearrange (0.1-1) stable; urgency=low
 
   * Initial release
 
