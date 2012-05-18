@@ -65,14 +65,19 @@ G_BEGIN_DECLS
 typedef struct _GstReArrange      GstReArrange;
 typedef struct _GstReArrangeClass GstReArrangeClass;
 
-struct _GstReArrange
-{
+enum EReArrangeMode {
+	REARRANGE_MODE_SIMPLE = 0,
+	REARRANGE_MODE_SPREAD = 1
+};
+
+struct _GstReArrange {
   GstElement element;
 
   GstPad *sinkpad, *srcpad;
 
   guint outChannels;
   guint outPos;
+  enum EReArrangeMode mode;
 };
 
 struct _GstReArrangeClass

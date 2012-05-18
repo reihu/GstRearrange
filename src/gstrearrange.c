@@ -81,17 +81,16 @@ GST_DEBUG_CATEGORY_STATIC (gst_rearrange_debug);
 #define GST_CAT_DEFAULT gst_rearrange_debug
 
 /* Filter signals and args */
-enum
-{
-  /* FILL ME */
-  LAST_SIGNAL
+enum {
+	/* FILL ME */
+	LAST_SIGNAL
 };
 
-enum
-{
-  PROP_0,
-  PROP_POS,
-  PROP_CHANNELS
+enum {
+	PROP_0,
+	PROP_POS,
+	PROP_CHANNELS,
+	PROP_MODE
 };
 
 #define SRCCAPS \
@@ -181,10 +180,10 @@ gst_rearrange_base_init (gpointer gclass) {
 static void
 gst_rearrange_class_init (GstReArrangeClass * klass) {
 	GObjectClass *gobject_class;
-	GstElementClass *gstelement_class;
+//	GstElementClass *gstelement_class;
 
 	gobject_class = (GObjectClass *) klass;
-	gstelement_class = (GstElementClass *) klass;
+//	gstelement_class = (GstElementClass *) klass;
 
 	gobject_class->set_property = gst_rearrange_set_property;
 	gobject_class->get_property = gst_rearrange_get_property;
@@ -195,6 +194,12 @@ gst_rearrange_class_init (GstReArrangeClass * klass) {
 	g_object_class_install_property (gobject_class, PROP_POS,
 		g_param_spec_uint("pos", "SignalPos", "Position of the signal (0: front, 1: rear, 2: center/lfe, 3: side)",
 		0, 3, 0, G_PARAM_READWRITE));
+	g_object_class_install_property (gobject_class, PROP_MODE,
+		g_param_spec_uint("mode", "Rearrange-mode",
+			"Specify the working mode for the plugin\n"
+			"\t0: Simple: Just annotate the output channels with the new positions (Simpler, but won't work if the sound daemon does remixing!"
+			"\t1: Spread: create [channels] channels and fill the unused ones with silence\n",
+			0, 1, 0, G_PARAM_READWRITE));
 }
 
 /* initialize the new element
@@ -221,6 +226,7 @@ gst_rearrange_init (GstReArrange * filter, GstReArrangeClass * gclass) {
 
   filter->outChannels = 8;
   filter->outPos = 0;
+  filter->mode = REARRANGE_MODE_SIMPLE;
 }
 
 static void
@@ -235,6 +241,9 @@ gst_rearrange_set_property (GObject * object, guint prop_id,
 		break;
 	case PROP_POS:
 		filter->outPos = g_value_get_uint(value);
+		break;
+	case PROP_MODE:
+		filter->mode = g_value_get_uint(value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -256,6 +265,10 @@ gst_rearrange_get_property (GObject * object, guint prop_id,
 	case PROP_POS:
 		g_print("posType: %s\n", g_type_name(g_value_array_get_type()));
 		g_value_set_uint(value, filter->outPos);
+		break;
+	case PROP_MODE:
+		g_print("modeType: %s\n", g_type_name(g_value_array_get_type()));
+		g_value_set_uint(value, filter->mode);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -314,19 +327,57 @@ gint gst_rearrange_get_caps_int(GstCaps *sinkCaps, const char *field) {
 	return rc;
 }
 
+// specific chain functions for the different working modes
+inline static GstFlowReturn
+gst_rearrange_chain_simple (GstReArrange *filter, GstBuffer * buf);
+inline static GstFlowReturn
+gst_rearrange_chain_spread (GstReArrange *filter, GstPad * pad, GstBuffer * buf);
+
+
 /* chain function
  * this function does the actual processing
  */
 static GstFlowReturn
-gst_rearrange_chain (GstPad * pad, GstBuffer * buf)
-{
+gst_rearrange_chain (GstPad * pad, GstBuffer * buf) {
+	GstReArrange *filter = GST_REARRANGE (GST_OBJECT_PARENT (pad));
+	GstFlowReturn rc = GST_FLOW_WRONG_STATE;
+
+	switch (filter->mode) {
+	case REARRANGE_MODE_SIMPLE:
+		rc = gst_rearrange_chain_simple(filter, buf);
+		break;
+	case REARRANGE_MODE_SPREAD:
+		rc = gst_rearrange_chain_spread(filter, pad, buf);
+		break;
+	}
+	return rc;
+}
+
+inline static GstFlowReturn
+gst_rearrange_chain_simple (GstReArrange *filter, GstBuffer * buf) {
+	// set channel positions
+	GstCaps *tgtCaps = 0;
+	GstStructure *struc = gst_structure_copy(gst_caps_get_structure(gst_buffer_get_caps(buf), 0));
+
+	gst_audio_set_channel_positions(struc, _gst_rearrange_positions + 2*filter->outPos);
+
+	tgtCaps = gst_caps_new_empty();
+	gst_caps_append_structure(tgtCaps, struc);
+
+	gst_buffer_set_caps(buf, tgtCaps);
+	gst_caps_unref(tgtCaps);
+
+
+	return gst_pad_push(filter->srcpad, buf);
+}
+
+inline static GstFlowReturn
+gst_rearrange_chain_spread (GstReArrange *filter, GstPad * pad, GstBuffer * buf) {
 	// get input buffer info
 	int width = gst_rearrange_get_caps_int(gst_buffer_get_caps(buf), "width")/8;
 	int inChannels = gst_rearrange_get_caps_int(gst_buffer_get_caps(buf), "channels");
 
-	GstReArrange *filter = GST_REARRANGE (GST_OBJECT_PARENT (pad));
-
-	GstBuffer *tgtBuf = gst_buffer_new_and_alloc(buf->size*(filter->outChannels/inChannels));
+	GstBuffer *tgtBuf = gst_buffer_new_and_alloc(GST_BUFFER_SIZE(buf)*(filter->outChannels/inChannels));
 
 	// target caps
 	GstCaps *tgtCaps = gst_rearrange_set_buffer_caps(gst_buffer_get_caps(buf), filter->outChannels);
