@@ -18,3 +18,10 @@ src/.deps/
 src/.libs/
 src/libgstrearrange.la
 src/libgstrearrange_la-gstrearrange.lo
+
+# QtCreator files (used for code editing)
+GstRearrange.config
+GstRearrange.files
+GstRearrange.creator
+GstRearrange.creator.user
+GstRearrange.includes
