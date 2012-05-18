@@ -1,3 +1,10 @@
+gstreamer0.10-rearrange (0.3) stable; urgency=low
+
+  * Added a simple mode that just resets the channel positions
+    (which is the new default mode)
+
+ -- Manuel Reithuber <manuel@reithuber.net>  Fri, 18 May 2012 13:53:27 +0200
+
 gstreamer0.10-rearrange (0.2-4) stable; urgency=low
 
   * removed dh-autoreconf from the build dependencies
