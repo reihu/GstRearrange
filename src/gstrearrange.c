@@ -358,7 +358,9 @@ inline static GstFlowReturn
 gst_rearrange_chain_simple (GstReArrange *filter, GstBuffer * buf) {
 	// set channel positions
 	GstCaps *tgtCaps = 0;
-	GstStructure *struc = gst_structure_copy(gst_caps_get_structure(gst_buffer_get_caps(buf), 0));
+	GstCaps *srcCaps = gst_buffer_get_caps(buf);
+	GstStructure *struc = gst_structure_copy(gst_caps_get_structure(srcCaps, 0));
+	gst_caps_unref(srcCaps);
 
 	gst_audio_set_channel_positions(struc, _gst_rearrange_positions + 2*filter->outPos);
 
@@ -376,14 +378,16 @@ gst_rearrange_chain_simple (GstReArrange *filter, GstBuffer * buf) {
 inline static GstFlowReturn
 gst_rearrange_chain_spread (GstReArrange *filter, GstPad * pad, GstBuffer * buf) {
 	// get input buffer info
-	int width = gst_rearrange_get_caps_int(gst_buffer_get_caps(buf), "width")/8;
-	int inChannels = gst_rearrange_get_caps_int(gst_buffer_get_caps(buf), "channels");
+	GstCaps *srcCaps = gst_buffer_get_caps(buf);
+	int width = gst_rearrange_get_caps_int(srcCaps, "width")/8;
+	int inChannels = gst_rearrange_get_caps_int(srcCaps, "channels");
 
 	GstBuffer *tgtBuf = gst_buffer_new_and_alloc(GST_BUFFER_SIZE(buf)*(filter->outChannels/inChannels));
 
 	// target caps
-	GstCaps *tgtCaps = gst_rearrange_set_buffer_caps(gst_buffer_get_caps(buf), filter->outChannels);
+	GstCaps *tgtCaps = gst_rearrange_set_buffer_caps(srcCaps, filter->outChannels);
 	gst_buffer_set_caps(tgtBuf, tgtCaps);
+	gst_caps_unref(srcCaps);
 	gst_caps_unref(tgtCaps);
 
 	gint8 *pSrc = buf->data, *pTgt = tgtBuf->data;
