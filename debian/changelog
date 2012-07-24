@@ -1,3 +1,9 @@
+gstreamer0.10-rearrange (0.3-1) stable; urgency=low
+
+  * Fixed some memory issues
+
+ -- Manuel Reithuber <manuel@reithuber.net>  Tue, 24 Jul 2012 10:36:40 +0200
+
 gstreamer0.10-rearrange (0.3) stable; urgency=low
 
   * Added a simple mode that just resets the channel positions
