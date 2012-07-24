@@ -312,6 +312,7 @@ GstCaps* gst_rearrange_set_buffer_caps (GstCaps *sinkCaps, int channels) {
 	rc = gst_caps_new_empty();
 	gst_caps_append_structure(rc, struc);
 
+	//gst_structure_free(struc); Not necessary because gst_caps_append_structure makes rc the new owner
 	return rc;
 }
 
@@ -367,6 +368,7 @@ gst_rearrange_chain_simple (GstReArrange *filter, GstBuffer * buf) {
 	gst_buffer_set_caps(buf, tgtCaps);
 	gst_caps_unref(tgtCaps);
 
+	//gst_structure_free(struc); Not necessary because gst_caps_append_structure makes rc the new owner
 
 	return gst_pad_push(filter->srcpad, buf);
 }
